@@ -1,5 +1,6 @@
 package com.myzghome.core.bean.factory;
 
+import com.myzghome.core.annotation.Loading;
 import com.myzghome.core.annotation.Register;
 import lombok.Data;
 
@@ -14,6 +15,8 @@ public class StudentTestBean {
 
     private String name;
     private int age;
+    @Loading
+    private ClassesTestBean classes;
 
 
     public void hello(){

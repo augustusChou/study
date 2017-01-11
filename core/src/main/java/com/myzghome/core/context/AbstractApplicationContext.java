@@ -25,7 +25,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext {
 
 
     @Override
-    public Object getBean(String beanName) {
+    public Object getBean(String beanName) throws Exception {
         return beanFactory.getBean(beanName);
     }
 

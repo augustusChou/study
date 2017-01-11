@@ -1,19 +1,16 @@
 package com.myzghome.core.context;
 
 import com.myzghome.core.annotation.AnnotationUtil;
-import com.myzghome.core.annotation.Loading;
 import com.myzghome.core.annotation.Register;
 import com.myzghome.core.bean.BeanContainer;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
 import com.myzghome.core.bean.factory.DefaultBeanFactory;
-import com.myzghome.core.exception.FieldClassAnnotationNoSuchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Enumeration;
@@ -101,64 +98,19 @@ public class AnnotationApplicationContext extends AbstractApplicationContext {
             Register register = (Register) annotation;
             BeanContainer beanContainer = new BeanContainer(classes);
             beanContainer.setBeanClass(classes);
-            beanContainer.setBean(classes.newInstance());
 
             if (register.name().length() > 0) {
                 //如果注册bean的时候指定了名称，就使用指定的名称
                 beanContainer.setBeanName(register.name());
             } else {
-                beanContainer.setBeanName(getSimpleClassName(classes.getName()));
+                beanContainer.setBeanName(beanFactory.getSimpleClassName(classes));
             }
 
-            //设置属性
-            setProperty(beanContainer);
             beanFactory.registerBean(beanContainer.getBeanName(), beanContainer);
             log.debug("register: " + beanContainer.getBeanName());
         }
     }
 
-    //设置字段
-    private void setProperty(BeanContainer beanContainer) throws Exception {
-        //获取所有字段(私有公有)
-        Field[] fields = beanContainer.getBeanClass().getDeclaredFields();
-        for (Field field : fields) {
-            Annotation annotation = AnnotationUtil.getTargetAnnotation(field.getAnnotations(), Loading.class);
-            if (annotation != null) {
-                //如果字段使用了@Loading注解，但是字段的类未使用@Register注解 就抛出异常
-                Annotation fieldClassAnnotation = AnnotationUtil.getTargetAnnotation(
-                        field.getType().getAnnotations(), Register.class);
-                if (fieldClassAnnotation != null) {
-                    Loading loading = (Loading) annotation;
-
-                    Object value;
-                    if (loading.name().length() > 0) {
-                        //优先使用注解的name属性值去获取对象
-                        value = beanFactory.getBean(loading.name());
-                    } else {
-                        value = beanFactory.getBean(field.getName());
-                    }
-                    if (value != null) {
-                        field.setAccessible(true);
-                        field.set(beanContainer.getBean(), value);
-                    } else {
-                        registerBean(field.getType());
-                        field.setAccessible(true);
-                        //根据class类型去获取bean（因为只允许单例）
-                        Object fieldValue = beanFactory.getBean(field.getType());
-                        field.set(beanContainer.getBean(), fieldValue);
-                    }
-                } else {
-                    throw new FieldClassAnnotationNoSuchException(field.getName() + "未注册 也未声明 @Register");
-                }
-            }
-        }
-    }
-
-    private String getSimpleClassName(String className) {
-        String tmp = className.substring(className.lastIndexOf(".") + 1);
-        String firstChar = tmp.substring(0, 1);
-        return firstChar.toLowerCase() + tmp.substring(1, tmp.length());
-    }
 
     //从指定的包路径中获取所有的Class
     private Set<Class<?>> getClasses(String packagePath) {
