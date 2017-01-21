@@ -1,5 +1,6 @@
 package com.myzghome.core.annotation;
 
+import com.myzghome.core.bean.factory.AbstractTestBean;
 import com.myzghome.core.bean.factory.StudentTestBean;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,6 +14,12 @@ import java.lang.annotation.Annotation;
  */
 public class AnnotationUtilTest {
 
+    @Test
+    public void depthScanAnnotation() throws Exception {
+        Annotation annotation = AnnotationUtil.depthScanAnnotation(
+                AbstractTestBean.class, Register.class);
+        Assert.assertTrue(annotation != null);
+    }
 
     @Test
     public void getTargetAnnotation() throws Exception {

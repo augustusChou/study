@@ -16,28 +16,19 @@ public class AbstractBeanFactoryTest {
     private AbstractBeanFactory abstractBeanFactory;
 
     @Before
-    public void before() throws Exception{
-        abstractBeanFactory=DefaultBeanFactory.class.newInstance();
+    public void before() throws Exception {
+        abstractBeanFactory = DefaultBeanFactory.class.newInstance();
     }
 
     @Test
     public void registerBean() throws Exception {
-        abstractBeanFactory.registerBean("student",new BeanContainer(StudentTestBean.class));
-        Assert.assertTrue(abstractBeanFactory.getBeans().size()>0);
+        abstractBeanFactory.registerBean("student", new BeanContainer(StudentTestBean.class));
+        Assert.assertTrue(abstractBeanFactory.getBeanCount() > 0);
     }
 
-
     @Test
-    public void getBean() throws Exception {
-        registerBean();
-        StudentTestBean student= (StudentTestBean) abstractBeanFactory.getBean("student");
-        student.hello();
-    }
-
-
-    @Test
-    public void assertExistBean()throws Exception{
-        boolean result=abstractBeanFactory.assertExistBean(ClassesTestBean.class);
+    public void assertExistBean() throws Exception {
+        boolean result = abstractBeanFactory.assertExistBean(ClassesTestBean.class);
         Assert.assertFalse(result);
     }
 

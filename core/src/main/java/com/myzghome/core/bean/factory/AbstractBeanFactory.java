@@ -1,14 +1,12 @@
 package com.myzghome.core.bean.factory;
 
-import com.myzghome.core.annotation.AnnotationUtil;
-import com.myzghome.core.annotation.Loading;
-import com.myzghome.core.annotation.Register;
+import com.myzghome.core.annotation.explain.*;
 import com.myzghome.core.bean.BeanContainer;
-import com.myzghome.core.exception.FieldClassAnnotationNoSuchException;
-import com.myzghome.core.exception.TargetRegisterClassNoSuchException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -20,9 +18,22 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public abstract class AbstractBeanFactory implements BeanFactory {
 
     //存放所有bean的线程安全的map
-    private ConcurrentHashMap<String, BeanContainer> beans = new ConcurrentHashMap<String, BeanContainer>();
-
+    protected ConcurrentHashMap<String, BeanContainer> beans = new ConcurrentHashMap<String, BeanContainer>();
+    //已经注册的bean列表
     private ConcurrentSkipListSet<String> registerBeanClassList = new ConcurrentSkipListSet<>();
+    //加载注解解释器列表
+    private ConcurrentHashMap<Class, AnnotationExplain> annotationExplainContainer = new ConcurrentHashMap<>();
+
+    public AbstractBeanFactory() {
+        loadDefaultAnnotationExplain();
+    }
+
+    //初始化
+    public void initialize() throws Exception {
+        for (Map.Entry<String, BeanContainer> bean : beans.entrySet()) {
+            getBean(bean.getKey());
+        }
+    }
 
     public Object getBean(String beanName) throws Exception {
         if (beanName != null && beanName.length() > 0 && beans.containsKey(beanName)) {
@@ -32,43 +43,39 @@ public abstract class AbstractBeanFactory implements BeanFactory {
                 bean = beanContainer.getBeanClass().newInstance();
                 beanContainer.setBean(bean);
                 setProperty(beanContainer);
+                setMethod(beanContainer);
             }
             return bean;
         }
         return null;
     }
 
+    //根据class创建相应的bean
+    public void setClass(Class classes) throws Exception {
+        //不是抽象类和接口才进行注册
+        if (!classes.isInterface() && !Modifier.isAbstract(classes.getModifiers())) {
+            for (Annotation annotation : classes.getAnnotations()) {
+                if (annotationExplainContainer.containsKey(annotation.annotationType())) {
+                    ClassAnnotationExplain explain = (ClassAnnotationExplain) annotationExplainContainer.get(annotation.annotationType());
+                    explain.handler(classes, annotation, this, null);
+                }
+            }
+        }
+
+    }
+
+    //设置方法
+    protected abstract void setMethod(BeanContainer beanContainer) throws Exception;
+
     //设置字段
     private void setProperty(BeanContainer beanContainer) throws Exception {
         //获取所有字段(私有公有)
         Field[] fields = beanContainer.getBeanClass().getDeclaredFields();
         for (Field field : fields) {
-            Annotation annotation = AnnotationUtil.getTargetAnnotation(field.getAnnotations(), Loading.class);
-            if (annotation != null) {
-                //如果字段使用了@Loading注解，但是字段的类未使用@Register注解 就抛出异常
-                Annotation fieldClassAnnotation = AnnotationUtil.getTargetAnnotation(
-                        field.getType().getAnnotations(), Register.class);
-                if (fieldClassAnnotation != null) {
-                    Loading loading = (Loading) annotation;
-
-                    Object value;
-                    String beanName;
-                    if (loading.name().length() > 0) {
-                        //优先使用注解的name属性值去获取对象
-                        beanName = loading.name();
-                        value = getBean(beanName);
-                    } else {
-                        beanName = getSimpleClassName(field.getType());
-                        value = getBean(beanName);
-                    }
-                    if (value != null) {
-                        field.setAccessible(true);
-                        field.set(beanContainer.getBean(), value);
-                    } else {
-                        throw new TargetRegisterClassNoSuchException("上下文找不到已经注册的：" + beanName);
-                    }
-                } else {
-                    throw new FieldClassAnnotationNoSuchException(field.getName() + "未注册 也未声明 @Register");
+            for (Annotation annotation : field.getAnnotations()) {
+                if (annotationExplainContainer.containsKey(annotation.annotationType())) {
+                    FieldAnnotationExplain explain = (FieldAnnotationExplain) annotationExplainContainer.get(annotation.annotationType());
+                    explain.handler(beanContainer, field, annotation, this, null);
                 }
             }
         }
@@ -89,8 +96,8 @@ public abstract class AbstractBeanFactory implements BeanFactory {
     }
 
 
-    public ConcurrentHashMap<String, BeanContainer> getBeans() {
-        return beans;
+    public int getBeanCount() {
+        return beans.size();
     }
 
     public boolean assertExistBean(Class classes) {
@@ -98,5 +105,33 @@ public abstract class AbstractBeanFactory implements BeanFactory {
             return true;
         }
         return false;
+    }
+
+    public void registerAnnotationExplain(Class classes) throws Exception {
+        //如果类是AnnotationExplain接口的实现，且不是一个接口和抽象类就放入解释器容器
+        if (AnnotationExplain.class.isAssignableFrom(classes) &&
+                !classes.isInterface() && !Modifier.isAbstract(classes.getModifiers())) {
+            AnnotationExplain explain = (AnnotationExplain) classes.newInstance();
+            //允许后一个覆盖前一个
+//                if (annotationExplainContainer.contains(explain.getExplainClass())){
+//                    throw new AnnotationExplainAlreadyExistedException(
+//                            explain.getExplainClass().annotationType().getName()+"注解的解释器已经存在");
+//                }
+            annotationExplainContainer.put(explain.getExplainClass().annotationType(), explain);
+        }
+    }
+
+    //读取框架自身的注解解释器
+    private void loadDefaultAnnotationExplain() {
+        try {
+            registerAnnotationExplain(RegisterExplain.class);
+            registerAnnotationExplain(LoadingExplain.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ConcurrentHashMap<Class, AnnotationExplain> getAnnotationExplainContainer() {
+        return annotationExplainContainer;
     }
 }
