@@ -7,7 +7,7 @@ study-vertx-mvc vertx的辅助模块 现在只要继承AbstractImplVerticle 就�
 
 
 
-public class WebServer extends AbstractImplVerticle {
+ public class WebServer extends AbstractImplVerticle {
     @Override
     public void start(Future<Void> startFuture) throws Exception {
 
@@ -23,4 +23,4 @@ public class WebServer extends AbstractImplVerticle {
                     }
                 });
     
-}
+ }
