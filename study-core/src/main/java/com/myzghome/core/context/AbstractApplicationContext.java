@@ -6,10 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 作者：周广
@@ -96,6 +93,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext {
     @Override
     public Object getBean(String beanName) throws Exception {
         return beanFactory.getBean(beanName);
+    }
+
+    public Object getBean(Class classes) {
+        return beanFactory.getBean(classes);
     }
 
     protected int getBeanCount() {

@@ -10,7 +10,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * 作者：周广
@@ -24,7 +23,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
     //加载注解解释器列表
     protected ConcurrentHashMap<Class, AnnotationExplain> annotationExplainContainer = new ConcurrentHashMap<>();
     //已经注册的bean列表
-    private ConcurrentSkipListSet<String> registerBeanClassList = new ConcurrentSkipListSet<>();
+    private ConcurrentHashMap<Class, String> registerBeanClassMap = new ConcurrentHashMap<>();
 
     public AbstractBeanFactory() {
         loadDefaultAnnotationExplain();
@@ -51,6 +50,18 @@ public abstract class AbstractBeanFactory implements BeanFactory {
         }
         return null;
     }
+
+    public Object getBean(Class classes) {
+        if (assertExistBean(classes)) {
+            try {
+                return getBean(registerBeanClassMap.get(classes));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
 
     //根据class创建相应的bean
     public void setClass(Class classes) throws Exception {
@@ -93,7 +104,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
     public void registerBean(String beanName, BeanContainer beanContainer) throws Exception {
         if (beanName != null && beanContainer != null && beanContainer.getBeanClass() != null) {
             beans.put(beanName, beanContainer);
-            registerBeanClassList.add(beanContainer.getBeanClass().getName());
+            registerBeanClassMap.put(beanContainer.getBeanClass(), beanName);
         }
     }
 
@@ -103,7 +114,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
     }
 
     public boolean assertExistBean(Class classes) {
-        if (registerBeanClassList.contains(classes.getName())) {
+        if (registerBeanClassMap.containsKey(classes)) {
             return true;
         }
         return false;

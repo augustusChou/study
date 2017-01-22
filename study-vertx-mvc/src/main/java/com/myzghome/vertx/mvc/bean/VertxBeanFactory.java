@@ -3,6 +3,7 @@ package com.myzghome.vertx.mvc.bean;
 import com.myzghome.core.annotation.explain.MethodAnnotationExplain;
 import com.myzghome.core.bean.BeanContainer;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
+import com.myzghome.vertx.mvc.annotation.explain.GetAnnotationExplain;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
@@ -15,12 +16,13 @@ import java.lang.reflect.Method;
  * 必要描述:
  */
 public class VertxBeanFactory extends AbstractBeanFactory {
-    private Vertx vertx;
     private Router router;
+    private Vertx vertx;
 
-    public VertxBeanFactory(Vertx vertx) {
+    public VertxBeanFactory(Vertx vertx, Router router) {
         this.vertx = vertx;
-        router = Router.router(vertx);
+        this.router = router;
+        loadAnnotationExplain();
     }
 
     @Override
@@ -37,5 +39,14 @@ public class VertxBeanFactory extends AbstractBeanFactory {
             }
         }
     }
+
+    private void loadAnnotationExplain() {
+        try {
+            registerAnnotationExplain(GetAnnotationExplain.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
