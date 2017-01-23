@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
  * 创建时间：2017/1/20 0020
  * 必要描述:
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Get {
+public @interface Api {
 
     String path() default "";
 

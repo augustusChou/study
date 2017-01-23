@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Post {
 
-    String path() default "";//注册路径
+
+    String path() default "";
 
 }

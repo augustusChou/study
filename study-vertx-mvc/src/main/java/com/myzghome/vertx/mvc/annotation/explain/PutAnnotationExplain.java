@@ -2,7 +2,7 @@ package com.myzghome.vertx.mvc.annotation.explain;
 
 import com.myzghome.core.bean.BeanContainer;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
-import com.myzghome.vertx.mvc.annotation.controller.Post;
+import com.myzghome.vertx.mvc.annotation.controller.Put;
 import io.vertx.ext.web.Router;
 
 import java.lang.annotation.Annotation;
@@ -14,20 +14,20 @@ import java.lang.reflect.Method;
  * 创建时间：2017/1/21 0021
  * 必要描述:
  */
-public class PostAnnotationExplain extends AbstractMethodAnnotationExplain {
+public class PutAnnotationExplain extends AbstractMethodAnnotationExplain {
 
     @Override
     public Annotation getExplainClass() {
-        return () -> Post.class;
+        return () -> Put.class;
     }
 
     @Override
     public void handler(BeanContainer beanContainer, Method method, Annotation annotation, AbstractBeanFactory beanFactory, Object[] params) throws Exception {
         Router router = (Router) params[0];
-        Post post = (Post) annotation;
-        String path = getMapperPath(beanContainer.getBeanClass(), post.path());
+        Put put = (Put) annotation;
+        String path = getMapperPath(beanContainer.getBeanClass(), put.path());
         if (path != null) {
-            router.post(path).handler(context -> {
+            router.put(path).handler(context -> {
                 try {
                     method.invoke(beanContainer.getBean(), context);
                 } catch (IllegalAccessException | InvocationTargetException e) {

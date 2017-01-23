@@ -9,8 +9,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
 import java.io.InputStream;
+
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 /**
  * 作者：周广
@@ -19,6 +22,7 @@ import java.io.InputStream;
  */
 public abstract class AbstractImplVerticle extends AbstractVerticle {
 
+    private static final String APPLICATION_JSON = "application/json";
     protected static AbstractApplicationContext applicationContext;
     protected static JsonObject config;
     protected Router mainRouter;
@@ -34,7 +38,8 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
     @Override
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
-        mainRouter = Router.router(vertx);
+        setMainRouter(vertx);
+
         if (applicationContext == null) {
             try {
                 config = getConfig("/conf.json");
@@ -45,6 +50,17 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void setMainRouter(Vertx vertx) {
+        mainRouter = Router.router(vertx);
+        mainRouter.route().consumes(APPLICATION_JSON);
+        mainRouter.route().produces(APPLICATION_JSON);
+        mainRouter.route().handler(BodyHandler.create());
+        mainRouter.route().handler(routingContext -> {
+            routingContext.response().headers().add(CONTENT_TYPE, APPLICATION_JSON);
+            routingContext.next();
+        });
     }
 
 }

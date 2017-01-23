@@ -3,7 +3,10 @@ package com.myzghome.vertx.mvc.bean;
 import com.myzghome.core.annotation.explain.MethodAnnotationExplain;
 import com.myzghome.core.bean.BeanContainer;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
+import com.myzghome.vertx.mvc.annotation.explain.DeleteAnnotationExplain;
 import com.myzghome.vertx.mvc.annotation.explain.GetAnnotationExplain;
+import com.myzghome.vertx.mvc.annotation.explain.PostAnnotationExplain;
+import com.myzghome.vertx.mvc.annotation.explain.PutAnnotationExplain;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
@@ -43,6 +46,9 @@ public class VertxBeanFactory extends AbstractBeanFactory {
     private void loadAnnotationExplain() {
         try {
             registerAnnotationExplain(GetAnnotationExplain.class);
+            registerAnnotationExplain(PostAnnotationExplain.class);
+            registerAnnotationExplain(PutAnnotationExplain.class);
+            registerAnnotationExplain(DeleteAnnotationExplain.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
