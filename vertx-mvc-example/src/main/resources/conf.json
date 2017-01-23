@@ -1,0 +1,4 @@
+{
+  "host.port": "8080",
+  "scanPackage": "com.myzghome.vertx.example"
+}

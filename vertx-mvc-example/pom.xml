@@ -3,36 +3,27 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.github.augustusChou</groupId>
         <artifactId>study</artifactId>
+        <groupId>com.github.augustusChou</groupId>
         <version>0.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>study-vertx-mvc</artifactId>
-
-    <properties>
-        <vertx-version>3.3.3</vertx-version>
-    </properties>
+    <artifactId>vertx-mvc-example</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>com.github.augustusChou</groupId>
-            <artifactId>study-core</artifactId>
-            <version>${project.version}</version>
+            <artifactId>study-vertx-mvc</artifactId>
+            <version>0.0.1</version>
         </dependency>
 
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-core</artifactId>
-            <version>${vertx-version}</version>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.13</version>
         </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web</artifactId>
-            <version>${vertx-version}</version>
-        </dependency>
-
     </dependencies>
+
 
 </project>

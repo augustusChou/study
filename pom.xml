@@ -12,6 +12,7 @@
     <modules>
         <module>study-core</module>
         <module>study-vertx-mvc</module>
+        <module>vertx-mvc-example</module>
     </modules>
 
     <dependencies>
