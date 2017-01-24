@@ -20,43 +20,38 @@ public class StudentService {
     private static final String failResult = JSON.toJSONString(JsonResult.FAIL());
     private List<Student> studentList = new ArrayList<>();
 
-    public String getAll() {
-        return JSON.toJSONString(studentList);
+    public List<Student> getAll() {
+        return studentList;
     }
 
-    public String getById(String id) {
+    public Student getById(String id) {
         Student student = get(id);
         if (student != null) {
-            return JSON.toJSONString(student);
+            return student;
         }
-        return failResult;
+        throw new RuntimeException("data not exists");
     }
 
-    public String update(String id, Student s) {
+    public void update(String id, Student s) {
         Student student = get(id);
         if (student != null) {
             student.setId(s.getId());
             student.setName(s.getName());
             student.setAge(s.getAge());
-            return successResult;
         }
-        return failResult;
     }
 
-    public String add(Student student) {
+    public void add(Student student) {
         if (student != null) {
             studentList.add(student);
-            return successResult;
         }
-        return failResult;
     }
 
-    public String delete(String id) {
+    public void delete(String id) {
         Student student = get(id);
         if (student != null) {
             studentList.remove(student);
         }
-        return successResult;
     }
 
 

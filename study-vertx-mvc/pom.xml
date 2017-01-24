@@ -33,6 +33,17 @@
             <version>${vertx-version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+
     </dependencies>
 
 </project>

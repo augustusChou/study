@@ -7,8 +7,6 @@ import com.myzghome.vertx.example.module.Student;
 import com.myzghome.vertx.example.service.StudentService;
 import com.myzghome.vertx.example.tool.JsonResult;
 import com.myzghome.vertx.mvc.annotation.controller.*;
-import io.vertx.core.json.Json;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,50 +27,42 @@ public class StudentController {
     private Map<Integer, Student> studentMap = new HashMap<>();
 
     @Get
-    public void getAll(RoutingContext routingContext) {
-        routingContext.response().end(studentService.getAll());
+    public JsonResult getAll() {
+        return new JsonResult(studentService.getAll());
     }
 
     @Get(path = ":id")
-    public void getById(RoutingContext routingContext) {
-        String id = routingContext.request().getParam("id");
-        if (id != null) {
-            routingContext.response().end(studentService.getById(id));
-            return;
+    public JsonResult getById(String a) {
+        if (a != null) {
+            return new JsonResult(studentService.getById(a));
         }
-        routingContext.response().end(failResult);
+        return JsonResult.FAIL;
     }
 
     @Post
-    public void addStudent(RoutingContext routingContext) {
-        Student student = Json.decodeValue(routingContext.getBodyAsString(), Student.class);
+    public JsonResult addStudent(String id, Student student) {
         if (student != null) {
-            routingContext.response().end(studentService.add(student));
-            return;
+            studentService.add(student);
+            return JsonResult.SUCESS;
         }
-        routingContext.response().end(failResult);
+        return JsonResult.FAIL;
     }
 
     @Put(path = ":id")
-    public void put(RoutingContext routingContext) {
-        String id = routingContext.request().getParam("id");
-        if (id != null) {
-            Student student = Json.decodeValue(routingContext.getBodyAsString(), Student.class);
-            if (student != null) {
-                routingContext.response().end(studentService.update(id, student));
-                return;
-            }
+    public JsonResult put(String param, Student student) {
+        if (student != null) {
+            studentService.update(param, student);
+            return JsonResult.SUCESS;
         }
-        routingContext.response().end(failResult);
+        return JsonResult.FAIL;
     }
 
     @Delete(path = ":id")
-    public void delete(RoutingContext routingContext) {
-        String id = routingContext.request().getParam("id");
+    public JsonResult delete(String id) {
         if (id != null) {
-            routingContext.response().end(studentService.delete(id));
-            return;
+            studentService.delete(id);
+            return JsonResult.SUCESS;
         }
-        routingContext.response().end(failResult);
+        return JsonResult.FAIL;
     }
 }

@@ -6,7 +6,6 @@ import com.myzghome.vertx.mvc.annotation.controller.Get;
 import io.vertx.ext.web.Router;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -28,11 +27,7 @@ public class GetAnnotationExplain extends AbstractMethodAnnotationExplain {
         String path = getMapperPath(beanContainer.getBeanClass(), get.path());
         if (path != null) {
             router.get(path).handler(context -> {
-                try {
-                    method.invoke(beanContainer.getBean(), context);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+                invoke(beanContainer, method, context, path);
             });
         }
     }
