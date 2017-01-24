@@ -8,16 +8,16 @@ import lombok.Data;
  * 必要描述:
  */
 @Data
-public class JsonResult {
+public class Result {
 
     public static final String FAIL = "FAIL";
     private String status;
     private String err_msg;
 
-    public JsonResult() {
+    public Result() {
     }
 
-    public JsonResult(String status, String err_msg) {
+    public Result(String status, String err_msg) {
         this.status = status;
         this.err_msg = err_msg;
     }
