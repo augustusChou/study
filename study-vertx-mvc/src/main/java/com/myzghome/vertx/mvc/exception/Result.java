@@ -10,16 +10,17 @@ import lombok.Data;
 @Data
 public class Result {
 
-    public static final String FAIL = "FAIL";
-    private String status;
-    private String err_msg;
+    public static final String FAIL = "-1";
+    private String result;
+
+    private String desc;
 
     public Result() {
     }
 
-    public Result(String status, String err_msg) {
-        this.status = status;
-        this.err_msg = err_msg;
+    public Result(String result, String desc) {
+        this.result = result;
+        this.desc = desc;
     }
 
 }

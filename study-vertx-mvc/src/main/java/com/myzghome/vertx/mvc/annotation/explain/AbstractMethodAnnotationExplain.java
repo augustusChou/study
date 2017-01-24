@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.myzghome.core.annotation.explain.MethodAnnotationExplain;
 import com.myzghome.core.bean.BeanContainer;
 import com.myzghome.vertx.mvc.annotation.controller.Api;
-import com.myzghome.vertx.mvc.exception.Result;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import javassist.ClassPool;
@@ -35,7 +34,7 @@ public abstract class AbstractMethodAnnotationExplain implements MethodAnnotatio
             }
         } catch (Exception e) {
             e.printStackTrace();
-            routingContext.response().end(JSON.toJSONString(new Result(Result.FAIL, e.toString())));
+            routingContext.fail(e);
         }
     }
 

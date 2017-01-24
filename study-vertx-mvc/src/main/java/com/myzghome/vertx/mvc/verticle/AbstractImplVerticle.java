@@ -1,14 +1,17 @@
 package com.myzghome.vertx.mvc.verticle;
 
+import com.alibaba.fastjson.JSON;
 import com.myzghome.core.context.AbstractApplicationContext;
 import com.myzghome.core.context.AnnotationApplicationContext;
 import com.myzghome.vertx.mvc.bean.VertxBeanFactory;
+import com.myzghome.vertx.mvc.exception.Result;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 import java.io.InputStream;
@@ -57,10 +60,18 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         mainRouter.route().consumes(APPLICATION_JSON);
         mainRouter.route().produces(APPLICATION_JSON);
         mainRouter.route().handler(BodyHandler.create());
+        //异常处理器
+        mainRouter.route().failureHandler(routingContext -> {
+            failureHandler(routingContext, routingContext.failure());
+        });
         mainRouter.route().handler(routingContext -> {
             routingContext.response().headers().add(CONTENT_TYPE, APPLICATION_JSON);
             routingContext.next();
         });
+    }
+
+    protected void failureHandler(RoutingContext routingContext, Throwable throwable) {
+        routingContext.response().setStatusCode(500).end(JSON.toJSONString(new Result(Result.FAIL, throwable.getCause().getMessage())));
     }
 
 }
