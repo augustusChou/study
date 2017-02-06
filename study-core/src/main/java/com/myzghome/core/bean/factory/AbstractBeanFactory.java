@@ -1,11 +1,14 @@
 package com.myzghome.core.bean.factory;
 
-import com.myzghome.core.annotation.explain.*;
+import com.myzghome.core.annotation.explain.AnnotationExplain;
+import com.myzghome.core.annotation.explain.ClassAnnotationExplain;
+import com.myzghome.core.annotation.explain.FieldAnnotationExplain;
 import com.myzghome.core.annotation.explain.impl.LoadingExplain;
 import com.myzghome.core.annotation.explain.impl.RegisterExplain;
 import com.myzghome.core.bean.BeanContainer;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -41,7 +44,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
             BeanContainer beanContainer = beans.get(beanName);
             Object bean = beanContainer.getBean();
             if (bean == null) {
-                bean = beanContainer.getBeanClass().newInstance();
+                bean = newInstance(beanContainer.getBeanClass());
                 beanContainer.setBean(bean);
                 setProperty(beanContainer);
                 setMethod(beanContainer);
@@ -52,13 +55,28 @@ public abstract class AbstractBeanFactory implements BeanFactory {
     }
 
     public Object getBean(Class classes) {
-        if (assertExistBean(classes)) {
+        String beanName = null;
+
+        if (registerBeanClassMap.containsKey(classes)) {
+            beanName = registerBeanClassMap.get(classes);
+        } else {
+            for (Map.Entry<Class, String> map : registerBeanClassMap.entrySet()) {
+                //如果容器里没有对应的class 就遍历容器查看是否有其子类
+                if (classes.isAssignableFrom(map.getKey())) {
+                    beanName = map.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (beanName != null) {
             try {
-                return getBean(registerBeanClassMap.get(classes));
+                return getBean(beanName);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
         return null;
     }
 
@@ -94,6 +112,39 @@ public abstract class AbstractBeanFactory implements BeanFactory {
         }
     }
 
+    private Object newInstance(Class classes) throws Exception {
+        Constructor constructor = getConstructor(classes);
+        if (constructor.getParameterTypes().length == 0) {
+            return classes.newInstance();
+        } else {
+            Class<?>[] params = constructor.getParameterTypes();
+            Object[] paramBean = new Object[params.length];
+            for (int i = 0; i < params.length; i++) {
+                if (assertExistBean(params[i])) {
+                    paramBean[i] = getBean(params[i]);
+                } else {
+                    setClass(params[i]);
+                    paramBean[i] = getBean(params[i]);
+                }
+            }
+            return constructor.newInstance(paramBean);
+        }
+    }
+
+    private Constructor getConstructor(Class classes) {
+        Constructor<?>[] constructors = classes.getConstructors();
+        if (constructors.length == 0) {
+            throw new RuntimeException("类找不到public构造器");
+        }
+        for (Constructor constructor : constructors) {
+            Class<?>[] params = constructor.getParameterTypes();
+            if (params.length == 0) {
+                return constructor;
+            }
+        }
+        return constructors[0];
+    }
+
     public String getSimpleClassName(Class classes) {
         String tmp = classes.getName().substring(classes.getName().lastIndexOf(".") + 1);
         String firstChar = tmp.substring(0, 1);
@@ -117,8 +168,16 @@ public abstract class AbstractBeanFactory implements BeanFactory {
         if (registerBeanClassMap.containsKey(classes)) {
             return true;
         }
+
+        for (Map.Entry<Class, String> map : registerBeanClassMap.entrySet()) {
+            if (classes.isAssignableFrom(map.getKey())) {
+                return true;
+            }
+        }
+
         return false;
     }
+
 
     public void registerAnnotationExplain(Class classes) throws Exception {
         //如果类是AnnotationExplain接口的实现，且不是一个接口和抽象类就放入解释器容器

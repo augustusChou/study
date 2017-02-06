@@ -52,6 +52,14 @@ public class LoadingExplain implements FieldAnnotationExplain {
             } else {
                 throw new TargetRegisterClassNoSuchException("上下文找不到已经注册的：" + beanName);
             }
+        } else if (beanFactory.assertExistBean(field.getType())) {
+            Object value = beanFactory.getBean(field.getType());
+            if (value != null) {
+                field.setAccessible(true);
+                field.set(beanContainer.getBean(), value);
+            } else {
+                throw new TargetRegisterClassNoSuchException("上下文找不到已经注册的：" + field.getName());
+            }
         } else {
             throw new FieldClassAnnotationNoSuchException(field.getName() + "未注册 也未声明 @Register");
         }

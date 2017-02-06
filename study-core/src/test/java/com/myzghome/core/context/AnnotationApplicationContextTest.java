@@ -1,6 +1,7 @@
 package com.myzghome.core.context;
 
 import com.myzghome.core.bean.factory.ClassesTestBean;
+import com.myzghome.core.bean.factory.CourseTestBean;
 import com.myzghome.core.bean.factory.StudentTestBean;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,8 +27,11 @@ public class AnnotationApplicationContextTest {
         Assert.assertTrue(applicationContext.getBeanCount() > 0);
         ClassesTestBean classesTestBean= (ClassesTestBean) applicationContext.getBean("classesTestBean");
         StudentTestBean studentTestBean = (StudentTestBean) applicationContext.getBean("studentTestBean");
+        CourseTestBean courseTestBean = (CourseTestBean) applicationContext.getBean("courseTestBean");
         classesTestBean.test();
         studentTestBean.hello();
+        courseTestBean.getClassesTestBean().test();
+        courseTestBean.getStudentTestBean().hello();
 
 
     }

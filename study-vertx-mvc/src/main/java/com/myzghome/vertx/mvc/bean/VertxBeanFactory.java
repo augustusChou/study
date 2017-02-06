@@ -8,6 +8,7 @@ import com.myzghome.vertx.mvc.annotation.explain.GetAnnotationExplain;
 import com.myzghome.vertx.mvc.annotation.explain.PostAnnotationExplain;
 import com.myzghome.vertx.mvc.annotation.explain.PutAnnotationExplain;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 import java.lang.annotation.Annotation;
@@ -19,13 +20,17 @@ import java.lang.reflect.Method;
  * 必要描述:
  */
 public class VertxBeanFactory extends AbstractBeanFactory {
-    private Router router;
+    private Router subRouter;
     private Vertx vertx;
+    private JsonObject config;
 
-    public VertxBeanFactory(Vertx vertx, Router router) {
+    public VertxBeanFactory(Vertx vertx, Router subRouter, JsonObject config) {
         this.vertx = vertx;
-        this.router = router;
+        this.subRouter = subRouter;
+        this.config = config;
         loadAnnotationExplain();
+        registerBean(vertx);
+        registerBean(config);
     }
 
     @Override
@@ -35,8 +40,6 @@ public class VertxBeanFactory extends AbstractBeanFactory {
             for (Annotation annotation : method.getAnnotations()) {
                 if (annotationExplainContainer.containsKey(annotation.annotationType())) {
                     MethodAnnotationExplain explain = (MethodAnnotationExplain) annotationExplainContainer.get(annotation.annotationType());
-                    Router subRouter = Router.router(vertx);
-                    router.mountSubRouter("/", subRouter);
                     explain.handler(beanContainer, method, annotation, this, new Object[]{subRouter});
                 }
             }
@@ -55,4 +58,16 @@ public class VertxBeanFactory extends AbstractBeanFactory {
     }
 
 
+    private void registerBean(Object object) {
+        BeanContainer beanContainer = new BeanContainer();
+        beanContainer.setBean(object);
+        beanContainer.setBeanClass(object.getClass());
+        String beanName = getSimpleClassName(object.getClass());
+        beanContainer.setBeanName(beanName);
+        try {
+            registerBean(beanName, beanContainer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

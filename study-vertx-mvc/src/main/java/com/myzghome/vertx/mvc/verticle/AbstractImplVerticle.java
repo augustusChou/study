@@ -29,6 +29,7 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
     protected static AbstractApplicationContext applicationContext;
     protected static JsonObject config;
     protected Router mainRouter;
+    private String mainRouterPath;
 
     protected static JsonObject getConfig(String jsonPath) throws Exception {
         InputStream in = AbstractImplVerticle.class.getResourceAsStream(jsonPath);
@@ -46,13 +47,22 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         if (applicationContext == null) {
             try {
                 config = getConfig("/conf.json");
-                applicationContext = new AnnotationApplicationContext(new String[]{config.getString("scanPackage")}, new VertxBeanFactory(vertx, mainRouter));
+                mainRouterPath = config().getString("mainRouterPath", "/");
+                Router subRouter = Router.router(vertx);
+                mainRouter.mountSubRouter(mainRouterPath, subRouter);
+                applicationContext = new AnnotationApplicationContext(new String[]{config.getString("scanPackage")},
+                        new VertxBeanFactory(vertx, subRouter, config));
                 applicationContext.refresh();
                 //获取一个默认的配置
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public JsonObject config() {
+        return config;
     }
 
     private void setMainRouter(Vertx vertx) {
@@ -71,7 +81,16 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
     }
 
     protected void failureHandler(RoutingContext routingContext, Throwable throwable) {
-        routingContext.response().setStatusCode(500).end(JSON.toJSONString(new Result(Result.FAIL, throwable.getCause().getMessage())));
+        Throwable throwable1 = throwable.getCause();
+        if (throwable1 == null) {
+            throwable1 = throwable.fillInStackTrace();
+        }
+        String failMessage = throwable1.getMessage();
+        routingContext.response().setStatusCode(500).end(JSON.toJSONString(new Result(Result.FAIL, failMessage)));
     }
 
+
+    public String getMainRouterPath() {
+        return mainRouterPath.startsWith("/") ? mainRouterPath : "/" + mainRouter;
+    }
 }

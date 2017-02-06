@@ -83,7 +83,13 @@ public abstract class AbstractMethodAnnotationExplain implements MethodAnnotatio
                 } else {
                     //从body里获取数据,key使用方法的参数名称
                     String paramName = getParamName(classes, method, i);
-                    Object bodyParam = routingContext.getBodyAsJson().getValue(paramName);
+                    Object bodyParam;
+                    routingContext.request().getParam(paramName);
+                    try {
+                        bodyParam = routingContext.getBodyAsJson().getValue(paramName);
+                    } catch (Exception e) {
+                        bodyParam = routingContext.request().getParam(paramName);
+                    }
                     params[i] = switchParam(paramClassName, bodyParam);
                 }
             } else {
@@ -106,6 +112,8 @@ public abstract class AbstractMethodAnnotationExplain implements MethodAnnotatio
             case "long":
             case "java.lang.Long":
                 return param == null ? 0L : Long.parseLong(String.valueOf(param));
+            case "java.lang.String":
+                return param == null ? "" : String.valueOf(param);
             default:
                 return param;
         }

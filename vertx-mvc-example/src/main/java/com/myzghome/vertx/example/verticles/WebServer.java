@@ -15,7 +15,7 @@ public class WebServer extends AbstractImplVerticle {
     @Override
     public void start(Future<Void> startFuture) throws Exception {
 
-        mainRouter.route("/").handler(StaticHandler.create("static").setIndexPage("index.html"));
+        mainRouter.route(getMainRouterPath()).handler(StaticHandler.create("static").setIndexPage("index.html"));
 
         vertx.createHttpServer().
                 requestHandler(mainRouter::accept).
