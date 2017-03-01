@@ -26,12 +26,12 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 public abstract class AbstractImplVerticle extends AbstractVerticle {
 
     private static final String APPLICATION_JSON = "application/json";
-    protected static AbstractApplicationContext applicationContext;
-    protected static JsonObject config;
+    private static AbstractApplicationContext applicationContext;
+    private static JsonObject config;
     protected Router mainRouter;
     private String mainRouterPath;
 
-    protected static JsonObject getConfig(String jsonPath) throws Exception {
+    private static JsonObject getConfig(String jsonPath) throws Exception {
         InputStream in = AbstractImplVerticle.class.getResourceAsStream(jsonPath);
         byte[] content = new byte[in.available()];
         in.read(content);
@@ -53,7 +53,6 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
                 applicationContext = new AnnotationApplicationContext(new String[]{config.getString("scanPackage")},
                         new VertxBeanFactory(vertx, subRouter, config));
                 applicationContext.refresh();
-                //获取一个默认的配置
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -80,7 +79,7 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         });
     }
 
-    protected void failureHandler(RoutingContext routingContext, Throwable throwable) {
+    private void failureHandler(RoutingContext routingContext, Throwable throwable) {
         Throwable throwable1 = throwable.getCause();
         if (throwable1 == null) {
             throwable1 = throwable.fillInStackTrace();
@@ -90,7 +89,7 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
     }
 
 
-    public String getMainRouterPath() {
+    protected String getMainRouterPath() {
         return mainRouterPath.startsWith("/") ? mainRouterPath : "/" + mainRouter;
     }
 }
