@@ -31,13 +31,6 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
     protected Router mainRouter;
     private String mainRouterPath;
 
-    private static JsonObject getConfig(String jsonPath) throws Exception {
-        InputStream in = AbstractImplVerticle.class.getResourceAsStream(jsonPath);
-        byte[] content = new byte[in.available()];
-        in.read(content);
-        Buffer buf = Buffer.buffer(content);
-        return buf.toJsonObject();
-    }
 
     @Override
     public void init(Vertx vertx, Context context) {
@@ -46,7 +39,7 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
 
         if (applicationContext == null) {
             try {
-                config = getConfig("/conf.json");
+                config();
                 mainRouterPath = config().getString("mainRouterPath", "/");
                 Router subRouter = Router.router(vertx);
                 mainRouter.mountSubRouter(mainRouterPath, subRouter);
@@ -59,9 +52,12 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         }
     }
 
-    @Override
-    public JsonObject config() {
-        return config;
+    protected String getMainRouterPath() {
+        return "/" + mainRouterPath.replaceAll("/", "");
+    }
+
+    protected Object getBean(Class classes) {
+        return applicationContext.getBean(classes);
     }
 
     private void setMainRouter(Vertx vertx) {
@@ -88,8 +84,13 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         routingContext.response().setStatusCode(500).end(JSON.toJSONString(new Result(Result.FAIL, failMessage)));
     }
 
-
-    protected String getMainRouterPath() {
-        return mainRouterPath.startsWith("/") ? mainRouterPath : "/" + mainRouter;
+    private static JsonObject getConfig(String jsonPath) throws Exception {
+        InputStream in = AbstractImplVerticle.class.getResourceAsStream(jsonPath);
+        byte[] content = new byte[in.available()];
+        in.read(content);
+        Buffer buf = Buffer.buffer(content);
+        return buf.toJsonObject();
     }
+
+
 }
