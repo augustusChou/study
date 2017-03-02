@@ -9,6 +9,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -42,7 +43,8 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
                 mainRouterPath = config().getString("mainRouterPath", "/");
                 Router subRouter = Router.router(vertx);
                 mainRouter.mountSubRouter(mainRouterPath, subRouter);
-                applicationContext = new AnnotationApplicationContext(new String[]{config().getString("scanPackage")},
+                String[] scanPackageArr = getScanPackagePath(config());
+                applicationContext = new AnnotationApplicationContext(scanPackageArr,
                         new VertxBeanFactory(vertx, subRouter, config()));
                 applicationContext.refresh();
             } catch (Exception e) {
@@ -81,6 +83,15 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         }
         String failMessage = throwable1.getMessage();
         routingContext.response().setStatusCode(500).end(JSON.toJSONString(new Result(Result.FAIL, failMessage)));
+    }
+
+    private static String[] getScanPackagePath(JsonObject config) {
+        JsonArray scanPackage = config.getJsonArray("scanPackage");
+        String[] scanPackageArr = new String[scanPackage.size()];
+        for (int i = 0; i < scanPackage.size(); i++) {
+            scanPackageArr[i] = scanPackage.getString(i);
+        }
+        return scanPackageArr;
     }
 
     private static JsonObject getConfig(String jsonPath) throws Exception {
