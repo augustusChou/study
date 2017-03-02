@@ -27,7 +27,6 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
 
     private static final String APPLICATION_JSON = "application/json";
     private static AbstractApplicationContext applicationContext;
-    private static JsonObject config;
     protected Router mainRouter;
     private String mainRouterPath;
 
@@ -43,8 +42,8 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
                 mainRouterPath = config().getString("mainRouterPath", "/");
                 Router subRouter = Router.router(vertx);
                 mainRouter.mountSubRouter(mainRouterPath, subRouter);
-                applicationContext = new AnnotationApplicationContext(new String[]{config.getString("scanPackage")},
-                        new VertxBeanFactory(vertx, subRouter, config));
+                applicationContext = new AnnotationApplicationContext(new String[]{config().getString("scanPackage")},
+                        new VertxBeanFactory(vertx, subRouter, config()));
                 applicationContext.refresh();
             } catch (Exception e) {
                 e.printStackTrace();
