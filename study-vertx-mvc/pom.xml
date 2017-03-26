@@ -12,7 +12,7 @@
     <artifactId>study-vertx-mvc</artifactId>
 
     <properties>
-        <vertx-version>3.3.3</vertx-version>
+        <vertx-version>RELEASE</vertx-version>
     </properties>
 
     <dependencies>

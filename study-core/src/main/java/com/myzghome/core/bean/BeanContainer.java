@@ -1,6 +1,7 @@
 package com.myzghome.core.bean;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * 作者：周广
@@ -23,4 +24,14 @@ public class BeanContainer {
         this.beanClass = beanClass;
     }
 
+    public BeanContainer(Class beanClass, String beanName) {
+        this.beanClass = beanClass;
+        this.beanName = beanName;
+    }
+
+    public BeanContainer(Class beanClass, String beanName, Object bean) {
+        this.beanClass = beanClass;
+        this.beanName = beanName;
+        this.bean = bean;
+    }
 }

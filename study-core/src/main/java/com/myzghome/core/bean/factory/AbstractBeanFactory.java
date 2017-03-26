@@ -3,6 +3,7 @@ package com.myzghome.core.bean.factory;
 import com.myzghome.core.annotation.explain.AnnotationExplain;
 import com.myzghome.core.annotation.explain.ClassAnnotationExplain;
 import com.myzghome.core.annotation.explain.FieldAnnotationExplain;
+import com.myzghome.core.annotation.explain.impl.InitExplain;
 import com.myzghome.core.annotation.explain.impl.LoadingExplain;
 import com.myzghome.core.annotation.explain.impl.RegisterExplain;
 import com.myzghome.core.bean.BeanContainer;
@@ -38,6 +39,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
             getBean(bean.getKey());
         }
     }
+
 
     public Object getBean(String beanName) throws Exception {
         if (beanName != null && beanName.length() > 0 && beans.containsKey(beanName)) {
@@ -80,6 +82,30 @@ public abstract class AbstractBeanFactory implements BeanFactory {
         return null;
     }
 
+    public void setBean(Object obj) {
+        BeanContainer beanContainer = new BeanContainer();
+        beanContainer.setBean(obj);
+        beanContainer.setBeanClass(obj.getClass());
+        String beanName = getSimpleClassName(obj.getClass());
+        beanContainer.setBeanName(beanName);
+        try {
+            registerBean(beanName, beanContainer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setBean(Class classes) {
+        String beanName = getSimpleClassName(classes);
+        BeanContainer container = new BeanContainer(classes, beanName);
+        beans.put(beanName, container);
+        try {
+            getBean(beanName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     //根据class创建相应的bean
     public void setClass(Class classes) throws Exception {
@@ -95,8 +121,71 @@ public abstract class AbstractBeanFactory implements BeanFactory {
 
     }
 
+    public String getSimpleClassName(Class classes) {
+        String tmp = classes.getName().substring(classes.getName().lastIndexOf(".") + 1);
+        String firstChar = tmp.substring(0, 1);
+        return firstChar.toLowerCase() + tmp.substring(1, tmp.length());
+    }
+
+    //注册bean
+    public void registerBean(String beanName, BeanContainer beanContainer) throws Exception {
+        if (beanName != null && beanContainer != null && beanContainer.getBeanClass() != null) {
+            beans.put(beanName, beanContainer);
+            registerBeanClassMap.put(beanContainer.getBeanClass(), beanName);
+        }
+    }
+
+    public int getBeanCount() {
+        return beans.size();
+    }
+
+    public boolean assertExistBean(Class classes) {
+        if (registerBeanClassMap.containsKey(classes)) {
+            return true;
+        }
+
+        for (Map.Entry<Class, String> map : registerBeanClassMap.entrySet()) {
+            if (classes.isAssignableFrom(map.getKey())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void registerAnnotationExplain(Class classes) throws Exception {
+        //如果类是AnnotationExplain接口的实现，且不是一个接口和抽象类就放入解释器容器
+        if (AnnotationExplain.class.isAssignableFrom(classes) &&
+                !classes.isInterface() && !Modifier.isAbstract(classes.getModifiers())) {
+            AnnotationExplain explain = (AnnotationExplain) classes.newInstance();
+            //允许后一个覆盖前一个
+//                if (annotationExplainContainer.contains(explain.getExplainClass())){
+//                    throw new AnnotationExplainAlreadyExistedException(
+//                            explain.getExplainClass().annotationType().getName()+"注解的解释器已经存在");
+//                }
+            annotationExplainContainer.put(explain.getExplainClass().annotationType(), explain);
+        }
+    }
+
+    public ConcurrentHashMap<Class, AnnotationExplain> getAnnotationExplainContainer() {
+        return annotationExplainContainer;
+    }
+
+
     //设置方法
     protected abstract void setMethod(BeanContainer beanContainer) throws Exception;
+
+
+    //读取框架自身的注解解释器
+    private void loadDefaultAnnotationExplain() {
+        try {
+            registerAnnotationExplain(RegisterExplain.class);
+            registerAnnotationExplain(LoadingExplain.class);
+            registerAnnotationExplain(InitExplain.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     //设置字段
     private void setProperty(BeanContainer beanContainer) throws Exception {
@@ -143,67 +232,5 @@ public abstract class AbstractBeanFactory implements BeanFactory {
             }
         }
         return constructors[0];
-    }
-
-    public String getSimpleClassName(Class classes) {
-        String tmp = classes.getName().substring(classes.getName().lastIndexOf(".") + 1);
-        String firstChar = tmp.substring(0, 1);
-        return firstChar.toLowerCase() + tmp.substring(1, tmp.length());
-    }
-
-    //注册bean
-    public void registerBean(String beanName, BeanContainer beanContainer) throws Exception {
-        if (beanName != null && beanContainer != null && beanContainer.getBeanClass() != null) {
-            beans.put(beanName, beanContainer);
-            registerBeanClassMap.put(beanContainer.getBeanClass(), beanName);
-        }
-    }
-
-
-    public int getBeanCount() {
-        return beans.size();
-    }
-
-    public boolean assertExistBean(Class classes) {
-        if (registerBeanClassMap.containsKey(classes)) {
-            return true;
-        }
-
-        for (Map.Entry<Class, String> map : registerBeanClassMap.entrySet()) {
-            if (classes.isAssignableFrom(map.getKey())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    public void registerAnnotationExplain(Class classes) throws Exception {
-        //如果类是AnnotationExplain接口的实现，且不是一个接口和抽象类就放入解释器容器
-        if (AnnotationExplain.class.isAssignableFrom(classes) &&
-                !classes.isInterface() && !Modifier.isAbstract(classes.getModifiers())) {
-            AnnotationExplain explain = (AnnotationExplain) classes.newInstance();
-            //允许后一个覆盖前一个
-//                if (annotationExplainContainer.contains(explain.getExplainClass())){
-//                    throw new AnnotationExplainAlreadyExistedException(
-//                            explain.getExplainClass().annotationType().getName()+"注解的解释器已经存在");
-//                }
-            annotationExplainContainer.put(explain.getExplainClass().annotationType(), explain);
-        }
-    }
-
-    //读取框架自身的注解解释器
-    private void loadDefaultAnnotationExplain() {
-        try {
-            registerAnnotationExplain(RegisterExplain.class);
-            registerAnnotationExplain(LoadingExplain.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public ConcurrentHashMap<Class, AnnotationExplain> getAnnotationExplainContainer() {
-        return annotationExplainContainer;
     }
 }

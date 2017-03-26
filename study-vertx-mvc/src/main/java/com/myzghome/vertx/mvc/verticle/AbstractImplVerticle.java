@@ -30,7 +30,7 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
     private static AbstractApplicationContext applicationContext;
     protected Router mainRouter;
     private String mainRouterPath;
-
+    private VertxBeanFactory beanFactory;
 
     @Override
     public void init(Vertx vertx, Context context) {
@@ -44,8 +44,8 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
                 Router subRouter = Router.router(vertx);
                 mainRouter.mountSubRouter(mainRouterPath, subRouter);
                 String[] scanPackageArr = getScanPackagePath(config());
-                applicationContext = new AnnotationApplicationContext(scanPackageArr,
-                        new VertxBeanFactory(vertx, subRouter, config()));
+                beanFactory = new VertxBeanFactory(vertx, subRouter, config());
+                applicationContext = new AnnotationApplicationContext(scanPackageArr, beanFactory);
                 applicationContext.refresh();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -59,6 +59,14 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
 
     protected Object getBean(Class classes) {
         return applicationContext.getBean(classes);
+    }
+
+    protected void setBean(Class classes) {
+        beanFactory.setBean(classes);
+    }
+
+    protected void setBean(Object obj){
+        beanFactory.setBean(obj);
     }
 
     private void setMainRouter(Vertx vertx) {

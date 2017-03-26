@@ -24,13 +24,18 @@ public class VertxBeanFactory extends AbstractBeanFactory {
     private Vertx vertx;
     private JsonObject config;
 
-    public VertxBeanFactory(Vertx vertx, Router subRouter, JsonObject config) {
+    public VertxBeanFactory(Vertx vertx, Router subRouter, JsonObject config) throws Exception {
         this.vertx = vertx;
         this.subRouter = subRouter;
         this.config = config;
         loadAnnotationExplain();
-        registerBean(vertx);
-        registerBean(config);
+        try {
+            setBean(vertx);
+            setBean(config);
+        } catch (Exception e) {
+            throw e;
+        }
+
     }
 
     @Override
@@ -58,16 +63,4 @@ public class VertxBeanFactory extends AbstractBeanFactory {
     }
 
 
-    private void registerBean(Object object) {
-        BeanContainer beanContainer = new BeanContainer();
-        beanContainer.setBean(object);
-        beanContainer.setBeanClass(object.getClass());
-        String beanName = getSimpleClassName(object.getClass());
-        beanContainer.setBeanName(beanName);
-        try {
-            registerBean(beanName, beanContainer);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
