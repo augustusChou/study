@@ -29,13 +29,8 @@ public class VertxBeanFactory extends AbstractBeanFactory {
         this.subRouter = subRouter;
         this.config = config;
         loadAnnotationExplain();
-        try {
-            setBean(vertx);
-            setBean(config);
-        } catch (Exception e) {
-            throw e;
-        }
-
+        setBean(vertx);
+        setBean(config);
     }
 
     @Override

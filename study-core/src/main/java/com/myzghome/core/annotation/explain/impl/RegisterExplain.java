@@ -1,6 +1,7 @@
 package com.myzghome.core.annotation.explain.impl;
 
 import com.myzghome.core.annotation.Register;
+import com.myzghome.core.annotation.explain.AnnotationExplain;
 import com.myzghome.core.annotation.explain.ClassAnnotationExplain;
 import com.myzghome.core.bean.BeanContainer;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 作者：周广
@@ -24,7 +26,7 @@ public class RegisterExplain implements ClassAnnotationExplain {
     }
 
     @Override
-    public void handler(Class classes, Annotation annotation, AbstractBeanFactory beanFactory, Object[] params) throws Exception {
+    public void handler(Class classes, Annotation annotation, AbstractBeanFactory beanFactory, Object[] params, ConcurrentHashMap<Class, AnnotationExplain> annotationExplainContainer) throws Exception {
         String name = "";
         if (annotation instanceof Register) {
             name = ((Register) annotation).name();

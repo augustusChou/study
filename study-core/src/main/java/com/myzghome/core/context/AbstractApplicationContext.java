@@ -1,9 +1,11 @@
 package com.myzghome.core.context;
 
+import com.myzghome.core.annotation.Configure;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -24,8 +26,11 @@ public abstract class AbstractApplicationContext implements ApplicationContext {
     protected AbstractBeanFactory beanFactory;
     //类扫描路径
     protected String[] packagePaths;
-    //所有扫描到的类
+    //配置类 必须最先初始化
+    protected Set<Class<?>> configureClassSet;
+    //所有扫描到的普通类
     protected Set<Class<?>> classSet;
+
 
     public AbstractApplicationContext(AbstractBeanFactory beanFactory, String[] packagePaths) {
         this.beanFactory = beanFactory;
@@ -71,9 +76,21 @@ public abstract class AbstractApplicationContext implements ApplicationContext {
     //扫描指定路径的class
     private void scanClass() {
         classSet = new HashSet<>();
+        configureClassSet = new HashSet<>();
         for (String path : packagePaths) {
             //循环包路径扫描所有class
-            classSet.addAll(getClasses(path));
+            getClasses(path).forEach(classes -> {
+                boolean notConfigure = true;
+                for (Annotation annotation : classes.getAnnotations()) {
+                    if (annotation.annotationType() == Configure.class) {
+                        configureClassSet.add(classes);
+                        notConfigure = false;
+                    }
+                }
+                if (notConfigure) {
+                    classSet.add(classes);
+                }
+            });
         }
     }
 

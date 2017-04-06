@@ -3,6 +3,7 @@ package com.myzghome.core.annotation.explain;
 import com.myzghome.core.bean.factory.AbstractBeanFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 作者：周广
@@ -14,11 +15,8 @@ public interface ClassAnnotationExplain extends AnnotationExplain {
 
     /**
      * 注解处理
-     *
-     * @param annotation    扫描到的注解
-     * @param beanContainer
      */
-    void handler(Class classes, Annotation annotation, AbstractBeanFactory beanFactory, Object[] params) throws Exception;
+    void handler(Class classes, Annotation annotation, AbstractBeanFactory beanFactory, Object[] params, ConcurrentHashMap<Class, AnnotationExplain> annotationExplainContainer) throws Exception;
 
 
 }

@@ -3,7 +3,7 @@ package com.myzghome.core.bean.factory;
 import com.myzghome.core.annotation.explain.AnnotationExplain;
 import com.myzghome.core.annotation.explain.ClassAnnotationExplain;
 import com.myzghome.core.annotation.explain.FieldAnnotationExplain;
-import com.myzghome.core.annotation.explain.impl.InitExplain;
+import com.myzghome.core.annotation.explain.impl.ConfigureExplain;
 import com.myzghome.core.annotation.explain.impl.LoadingExplain;
 import com.myzghome.core.annotation.explain.impl.RegisterExplain;
 import com.myzghome.core.bean.BeanContainer;
@@ -114,7 +114,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
             for (Annotation annotation : classes.getAnnotations()) {
                 if (annotationExplainContainer.containsKey(annotation.annotationType())) {
                     ClassAnnotationExplain explain = (ClassAnnotationExplain) annotationExplainContainer.get(annotation.annotationType());
-                    explain.handler(classes, annotation, this, null);
+                    explain.handler(classes, annotation, this, null, annotationExplainContainer);
                 }
             }
         }
@@ -181,7 +181,7 @@ public abstract class AbstractBeanFactory implements BeanFactory {
         try {
             registerAnnotationExplain(RegisterExplain.class);
             registerAnnotationExplain(LoadingExplain.class);
-            registerAnnotationExplain(InitExplain.class);
+            registerAnnotationExplain(ConfigureExplain.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

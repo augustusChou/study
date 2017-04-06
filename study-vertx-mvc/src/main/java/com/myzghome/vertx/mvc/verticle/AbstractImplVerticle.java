@@ -84,7 +84,7 @@ public abstract class AbstractImplVerticle extends AbstractVerticle {
         });
     }
 
-    private void failureHandler(RoutingContext routingContext, Throwable throwable) {
+    protected void failureHandler(RoutingContext routingContext, Throwable throwable) {
         Throwable throwable1 = throwable.getCause();
         if (throwable1 == null) {
             throwable1 = throwable.fillInStackTrace();

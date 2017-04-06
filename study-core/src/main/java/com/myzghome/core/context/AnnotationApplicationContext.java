@@ -23,6 +23,13 @@ public class AnnotationApplicationContext extends AbstractApplicationContext {
 
     @Override
     protected void loadBean() throws Exception {
+        //先加载配置类
+        for (Class classes : configureClassSet) {
+            if (!beanFactory.assertExistBean(classes)) {
+                beanFactory.setClass(classes);
+            }
+        }
+
         for (Class classes : classSet) {
             if (!beanFactory.assertExistBean(classes)) {
                 beanFactory.setClass(classes);
